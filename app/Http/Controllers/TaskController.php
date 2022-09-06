@@ -2,9 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Projects;
 use App\Models\Tasks;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Carbon;
 
 class TaskController extends Controller
 {
@@ -50,8 +52,11 @@ class TaskController extends Controller
 
     function get()
     {
-        $data = Tasks::with('project')->get();
-        echo json_encode($data->toArray());
+        $data = Tasks::with('project')->get()->toArray();
+        foreach ($data as $key => $value) {
+            $data[$key]['created_at'] = Carbon::createFromTimeStamp(strtotime($value['created_at']))->diffForHumans();
+        }
+        echo json_encode($data);
     }
 
     function check(Request $request)
@@ -71,5 +76,28 @@ class TaskController extends Controller
     {
         $data = Tasks::findOrFail($id)->toArray();
         return json_encode($data);
+    }
+
+    function delete($id)
+    {
+        try {
+            $Tasks = Tasks::find($id);
+            $Tasks->delete(); //returns true/false
+            $return['status'] = 1;
+            $return['message'] = 'Task removed';
+            DB::commit();
+        } catch (\Exception $e) {
+            DB::rollback();
+            $return['message'] = 'Something went wrong';
+            $return['status'] = 0;
+        }
+        echo json_encode($return);
+    }
+
+    function dashboard_count()
+    {
+        $data['project_count'] = Projects::all()->count();
+        $data['task_count'] = Tasks::all()->count();
+        echo json_encode($data);
     }
 }

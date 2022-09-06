@@ -21,24 +21,9 @@
                      <!-- small box -->
                      <div class="small-box bg-info">
                          <div class="inner">
-                             <h3>150</h3>
+                             <h3 id="project_count">processing...</h3>
 
-                             <p>New Orders</p>
-                         </div>
-                         <div class="icon">
-                             <i class="ion ion-bag"></i>
-                         </div>
-                         <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                     </div>
-                 </div>
-                 <!-- ./col -->
-                 <div class="col-lg-3 col-6">
-                     <!-- small box -->
-                     <div class="small-box bg-success">
-                         <div class="inner">
-                             <h3>53<sup style="font-size: 20px">%</sup></h3>
-
-                             <p>Bounce Rate</p>
+                             <p>Projects</p>
                          </div>
                          <div class="icon">
                              <i class="ion ion-stats-bars"></i>
@@ -49,34 +34,18 @@
                  <!-- ./col -->
                  <div class="col-lg-3 col-6">
                      <!-- small box -->
-                     <div class="small-box bg-warning">
+                     <div class="small-box bg-success">
                          <div class="inner">
-                             <h3>44</h3>
+                             <h3 id="task_count">processing...</sup></h3>
 
-                             <p>User Registrations</p>
+                             <p>Tasks</p>
                          </div>
                          <div class="icon">
-                             <i class="ion ion-person-add"></i>
+                             <i class="ion ion-stats-bars"></i>
                          </div>
                          <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
                      </div>
                  </div>
-                 <!-- ./col -->
-                 <div class="col-lg-3 col-6">
-                     <!-- small box -->
-                     <div class="small-box bg-danger">
-                         <div class="inner">
-                             <h3>65</h3>
-
-                             <p>Unique Visitors</p>
-                         </div>
-                         <div class="icon">
-                             <i class="ion ion-pie-graph"></i>
-                         </div>
-                         <a href="#" class="small-box-footer">More info <i class="fas fa-arrow-circle-right"></i></a>
-                     </div>
-                 </div>
-                 <!-- ./col -->
              </div>
              <!-- /.row -->
              <!-- Main row -->
@@ -293,6 +262,12 @@
  @endsection
  @section('js')
  <script>
+     var Toast = Swal.mixin({
+         toast: true
+         , position: 'top-end'
+         , showConfirmButton: false
+         , timer: 3000
+     });
      $(document).ready(function() {
          $('.select2').select2({
              theme: 'bootstrap4'
@@ -304,12 +279,6 @@
              , forcePlaceholderSize: true
              , zIndex: 999999
          })
-         var Toast = Swal.mixin({
-             toast: true
-             , position: 'top-end'
-             , showConfirmButton: false
-             , timer: 3000
-         });
 
          jQuery.validator.setDefaults({
              debug: true
@@ -327,7 +296,6 @@
                  }
              }
              , submitHandler: function(form) {
-                 // return false;
                  $("#submit").html('<span> Processing...</span>');
                  $("#submit").attr('disabled', true);
 
@@ -354,6 +322,9 @@
                              });
                              $("#submit").attr('disabled', false);
                              $("#submit").html('Save Changes');
+                             $("#modal-lg").modal('hide');
+                             $("#validateForm").trigger('reset');
+                             getCount();
                          }
                      }
                      , error: function(jqXHR, textStatus, errorThrown) {
@@ -441,6 +412,11 @@
                              });
                              $("#submit2").attr('disabled', false);
                              $("#submit2").html('Save Changes');
+                             $("#task-modal").modal('hide');
+                             $("#task_id").val('');
+                             $("#validateForm2").trigger('reset');
+                             getTasks();
+                             getCount();
                          }
                      }
                      , error: function(jqXHR, textStatus, errorThrown) {
@@ -490,6 +466,8 @@
 
 
      function addTask() {
+         $("#task_id").val('');
+         $("#validateForm2").trigger('reset');
          //get all projects
          $.ajax({
              url: "{{ route('projects.fetch') }}"
@@ -519,25 +497,31 @@
              , dataType: "json"
              , success: function(response) {
                  html = "";
-                 $(response).each(function(index, element) {
-                     var checked = element['isCompleted'] == 'Yes' ? 'checked' : '';
-                     html += '<li>' +
-                         '<span class="handle">' +
-                         '<i class="fas fa-ellipsis-v"></i>' +
-                         '<i class="fas fa-ellipsis-v"></i>' +
-                         '</span>' +
-                         '<div class="icheck-primary d-inline ml-2">' +
-                         '<input type="checkbox" onChange="check(this,' + element['id'] + ')" value="" name="todo1" id="todoCheck' + index + '" ' + checked + ' >' +
-                         '<label for="todoCheck' + index + '"></label>' +
-                         '</div>' +
-                         '<span class="text">' + element['project']['name'] + ' - ' + element['title'] + '</span>' +
-                         '<small class="badge badge-danger"><i class="far fa-clock"></i> 2 mins</small>' +
-                         '<div class="tools">' +
-                         '<i class="fas fa-edit" onClick="editTask(' + element['id'] + ')"></i>' +
-                         //'<i class="fas fa-trash-o"></i>' +
-                         '</div>' +
-                         '</li>';
-                 });
+                 if (response.length > 0) {
+
+                     $(response).each(function(index, element) {
+                         var checked = element['isCompleted'] == 'Yes' ? 'checked' : '';
+                         var done = element['isCompleted'] == 'Yes' ? 'done' : '';
+                         html += '<li class="">' +
+                             '<span class="handle">' +
+                             '<i class="fas fa-ellipsis-v"></i>' +
+                             '<i class="fas fa-ellipsis-v"></i>' +
+                             '</span>' +
+                             '<div class="icheck-primary d-inline ml-2">' +
+                             '<input type="checkbox" onChange="check(this,' + element['id'] + ')" value="" name="todo1" id="todoCheck' + index + '" ' + checked + ' >' +
+                             '<label for="todoCheck' + index + '"></label>' +
+                             '</div>' +
+                             '<span class="text"> ' + element['title'] + ' (' + element['project']['name'] + ')</span>' +
+                             '<small class="badge badge-danger"><i class="far fa-clock"></i> ' + element['created_at'] + '</small>' +
+                             '<div class="tools">' +
+                             '<i class="fas fa-edit" onClick="editTask(' + element['id'] + ')"></i>' +
+                             '<i class="fa fa-trash" onClick="deleteTask(' + element['id'] + ')"></i>' +
+                             '</div>' +
+                             '</li>';
+                     });
+                 } else {
+                     html = "No task found.";
+                 }
                  $("#task_list").html(html);
              }
          });
@@ -556,6 +540,33 @@
                  , _token: "{{ csrf_token() }}"
              }
              , success: function(response) {}
+         });
+     }
+
+
+     function deleteTask(id) {
+         //get all projects
+         $.ajax({
+             url: "{{ route('delete.task','') }}/" + id
+             , type: 'delete'
+             , dataType: "json"
+             , data: {
+                 _token: "{{ csrf_token() }}"
+             }
+             , success: function(response) {
+                 if (response.status == 0) {
+                     Toast.fire({
+                         icon: 'error'
+                         , title: response.message
+                     });
+                 } else {
+                     Toast.fire({
+                         icon: 'success'
+                         , title: response.message
+                     });
+                     getTasks();
+                 }
+             }
          });
      }
 
@@ -591,6 +602,19 @@
                      theme: 'bootstrap4'
                  });
                  $("#task-modal").modal('show');
+             }
+         });
+     }
+     getCount();
+
+     function getCount() {
+         $.ajax({
+             url: "{{ route('dashboard.count') }}"
+             , type: 'GET'
+             , dataType: "json"
+             , success: function(response) {
+                 $("#project_count").html(response.project_count);
+                 $("#task_count").html(response.task_count);
              }
          });
      }

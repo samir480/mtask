@@ -25,3 +25,5 @@ Route::post('/save/task', [TaskController::class, 'save'])->name('save.task');
 Route::get('/get/task', [TaskController::class, 'get'])->name('get.task');
 Route::post('/check/task', [TaskController::class, 'check'])->name('check.task');
 Route::get('/get/task/detail/{id}', [TaskController::class, 'detail'])->name('get.task.details');
+Route::delete('/delete/task/{id}', [TaskController::class, 'delete'])->name('delete.task');
+Route::get('/count', [TaskController::class, 'dashboard_count'])->name('dashboard.count');

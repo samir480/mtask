@@ -577,6 +577,7 @@
              url: "{{ route('projects.fetch') }}"
              , type: 'GET'
              , dataType: "json"
+             , async: false
              , success: function(response) {
                  html = "<option value=''>Select Project</option>";
                  $(response.allProjects).each(function(index, element) {
